@@ -1,0 +1,78 @@
+apiVersion: "apps/v1"
+kind: "Deployment"
+metadata:
+  name: {{ include "common.name" . | quote }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+    app.kubernetes.io/component: "manager"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "common.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        kubectl.kubernetes.io/default-container: "manager"
+      labels:
+        {{- include "common.labels" . | nindent 8 }}
+        {{- include "common.versionLabel" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ .Values.serviceAccount.name | quote }}
+      securityContext:
+        runAsNonRoot: true
+      terminationGracePeriodSeconds: 10
+      {{- if .Values.certManager.volume.enabled }}
+      volumes:
+        -
+          name: "cert"
+          secret:
+            defaultMode: 420
+            secretName: {{ .Values.certManager.volume.secretName | quote }}
+      {{- end }}
+      containers:
+        -
+          name: "manager"
+          image: "{{ .Values.manager.image.repo }}:{{ .Values.manager.image.tag }}"
+          imagePullPolicy: {{ .Values.manager.image.pullPolicy | quote }}
+          {{- with .Values.manager.args }}
+          args: {{- tpl (toYaml .) $ | nindent 10 }}
+          {{- end }}
+          {{- with .Values.manager.command }}
+          command: {{- tpl (toYaml .) $ | nindent 10 }}
+          {{- end }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            limits:
+              cpu: "500m"
+              memory: "128Mi"
+            requests:
+              cpu: "10m"
+              memory: "64Mi"
+          {{- if .Values.certManager.volume.enabled }}
+          volumeMounts:
+            -
+              mountPath: "/tmp/k8s-webhook-server/serving-certs"
+              name: "cert"
+              readOnly: true
+          {{- end }}
+          ports:
+            -
+              containerPort: 9443
+              name: "webhook-server"
+          readinessProbe:
+            httpGet:
+              path: "/readyz"
+              port: 8081
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: "/healthz"
+              port: 8081
+            initialDelaySeconds: 15
+            periodSeconds: 20

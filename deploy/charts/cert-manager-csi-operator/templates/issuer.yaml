@@ -1,0 +1,12 @@
+{{- if (and .Values.certManager.enabled .Values.certManager.issuer.create) -}}
+apiVersion: "cert-manager.io/v1"
+kind: {{ .Values.certManager.issuer.kind | quote }}
+metadata:
+  name: {{ tpl .Values.certManager.issuer.name . | quote }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+    app.kubernetes.io/component: "certificate"
+spec:
+  selfSigned: {}
+{{- end -}}

@@ -1,0 +1,18 @@
+{{- if (and .Values.certManager.enabled .Values.certManager.certificate.create) -}}
+apiVersion: "cert-manager.io/v1"
+kind: "Certificate"
+metadata:
+  name: {{ tpl .Values.certManager.certificate.name . | quote }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+    app.kubernetes.io/component: "certificate"
+spec:
+  dnsNames:
+    - "{{ include "common.name" . }}.{{ .Release.Namespace }}.svc"
+    - "{{ include "common.name" . }}.{{ .Release.Namespace }}.svc.cluster.local"
+  issuerRef:
+    kind: {{ .Values.certManager.issuer.kind | quote }}
+    name: {{ tpl .Values.certManager.issuer.name . | quote }}
+  secretName: {{ .Values.certManager.volume.secretName | quote }}
+{{- end -}}

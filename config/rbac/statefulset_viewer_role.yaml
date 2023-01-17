@@ -1,0 +1,27 @@
+# permissions for end users to view statefulsets.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: clusterrole
+    app.kubernetes.io/instance: statefulset-viewer-role
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: core-types-operator
+    app.kubernetes.io/part-of: core-types-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: statefulset-viewer-role
+rules:
+- apiGroups:
+  - apps.core-types-operator.example.com
+  resources:
+  - statefulsets
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - apps.core-types-operator.example.com
+  resources:
+  - statefulsets/status
+  verbs:
+  - get

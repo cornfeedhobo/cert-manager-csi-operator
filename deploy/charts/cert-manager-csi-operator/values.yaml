@@ -1,0 +1,26 @@
+name: "{{ .Chart.Name }}"
+
+serviceAccount:
+  create: false
+  name: "default"
+
+manager:
+  image:
+    repo: "controller"
+    tag: "latest"
+    pullPolicy: "IfNotPresent"
+  args: []
+  command: ["/manager"]
+
+certManager:
+  enabled: true
+  issuer:
+    create: true
+    kind: "Issuer"
+    name: "{{ .Chart.Name }}"
+  certificate:
+    create: true
+    name: "{{ .Chart.Name }}"
+  volume:
+    enabled: true
+    secretName: "webhook-server-cert"

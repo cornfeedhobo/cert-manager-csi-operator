@@ -1,0 +1,22 @@
+domain: core-types-operator.example.com
+layout:
+- go.kubebuilder.io/v3
+plugins:
+  manifests.sdk.operatorframework.io/v2: {}
+  scorecard.sdk.operatorframework.io/v2: {}
+projectName: core-types-operator
+repo: github.com/cornfeedhobo/cert-manager-csi-operator
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: core-types-operator.example.com
+  group: apps
+  kind: StatefulSet
+  path: github.com/cornfeedhobo/cert-manager-csi-operator/api/v1
+  version: v1
+  webhooks:
+    defaulting: true
+    webhookVersion: v1
+version: "3"
